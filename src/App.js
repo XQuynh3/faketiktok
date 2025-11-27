@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import './App.css';
 import VideoCard from './components/VideoCard';
 import BottomNavbar from './components/BottomNavbar';
 import TopNavbar from './components/TopNavbar';
+import VideoInfo from './components/VideoInfo';
 
 // This array holds information about different videos
 const videoUrls = [
@@ -54,20 +55,47 @@ const videoUrls = [
 
 function App() {
   const [videos, setVideos] = useState([]);
+  const [filteredVideos, setFilteredVideos] = useState([]);
+  const [searchHashtag, setSearchHashtag] = useState('');
+  const [showVideoInfo, setShowVideoInfo] = useState(false);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [mouseStartY, setMouseStartY] = useState(0);
   const videoRefs = useRef([]);
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
     setVideos(videoUrls);
+    setFilteredVideos(videoUrls);
   }, []);
+
+  // Exercise 7: Filter videos by hashtag
+  useEffect(() => {
+    if (searchHashtag) {
+      const filtered = videos.filter(video =>
+        video.description.toLowerCase().includes(`#${searchHashtag.toLowerCase()}`)
+      );
+      setFilteredVideos(filtered);
+    } else {
+      setFilteredVideos(videos);
+    }
+  }, [searchHashtag, videos]);
+
+  // Exercise 7: Search handler
+  const handleSearch = (hashtag) => {
+    setSearchHashtag(hashtag);
+  };
+
+  const handleClearSearch = () => {
+    setSearchHashtag('');
+  };
 
   useEffect(() => {
     const observerOptions = {
       root: null,
       rootMargin: '0px',
-      threshold: 0.8, // Adjust this value to change the scroll trigger point
+      threshold: 0.8,
     };
 
-    // This function handles the intersection of videos
     const handleIntersection = (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -82,48 +110,160 @@ function App() {
 
     const observer = new IntersectionObserver(handleIntersection, observerOptions);
 
-    // We observe each video reference to trigger play/pause
     videoRefs.current.forEach((videoRef) => {
-      observer.observe(videoRef);
+      if (videoRef) observer.observe(videoRef);
     });
 
-    // We disconnect the observer when the component is unmounted
     return () => {
       observer.disconnect();
     };
-  }, [videos]);
+  }, [filteredVideos]);
 
-  // This function handles the reference of each video
+  // Exercise 3: Mouse drag navigation handlers
+  const containerRef = useRef(null);
+  
+  const handleMouseDown = (e) => {
+    setIsMouseDown(true);
+    setMouseStartY(e.clientY);
+  };
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isMouseDown) return;
+
+    const deltaY = e.clientY - mouseStartY;
+
+    // Drag down (positive delta) -> go to previous video
+    if (deltaY > 50) {
+      if (containerRef.current) {
+        containerRef.current.scrollBy({
+          top: -window.innerHeight,
+          behavior: 'smooth'
+        });
+      }
+      setIsMouseDown(false);
+    } 
+    // Drag up (negative delta) -> go to next video
+    else if (deltaY < -50) {
+      if (containerRef.current) {
+        containerRef.current.scrollBy({
+          top: window.innerHeight,
+          behavior: 'smooth'
+        });
+      }
+      setIsMouseDown(false);
+    }
+  }, [isMouseDown, mouseStartY]);
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  // Exercise 5: Scroll handler for video info
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowVideoInfo(true);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        setShowVideoInfo(false);
+      }, 3000);
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  // Exercise 5: Keyboard handler for right arrow
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'ArrowRight') {
+        setShowVideoInfo(!showVideoInfo);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [showVideoInfo]);
+
+  // Exercise 3: Attach mouse event listeners to container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseup', handleMouseUp);
+    container.addEventListener('mouseleave', handleMouseUp);
+
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('mouseleave', handleMouseUp);
+    };
+  }, [handleMouseMove]);
+
   const handleVideoRef = (index) => (ref) => {
     videoRefs.current[index] = ref;
   };
 
   return (
     <div className="app">
-      <div className="container">
-        <TopNavbar className="top-navbar" />
-        {/* Here we map over the videos array and create VideoCard components */}
-        {videos.map((video, index) => (
-          <VideoCard
-            key={index}
-            username={video.username}
-            description={video.description}
-            song={video.song}
-            likes={video.likes}
-            saves={video.saves}
-            comments={video.comments}
-            shares={video.shares}
-            url={video.url}
-            profilePic={video.profilePic}
-            setVideoRef={handleVideoRef(index)}
-            autoplay={index === 0}
+      <div className="container" ref={containerRef}>
+        <TopNavbar
+          onSearch={handleSearch}
+          onClearSearch={handleClearSearch}
+        />
+
+        {/* Exercise 5: Video Info Panel */}
+        {filteredVideos.length > 0 && (
+          <VideoInfo
+            video={filteredVideos[0]}
+            isVisible={showVideoInfo}
+            onClose={() => setShowVideoInfo(false)}
           />
-        ))}
+        )}
+
+        {/* Search Results Header */}
+        {searchHashtag && (
+          <div className="search-results-header">
+            Search results for: <strong>#{searchHashtag}</strong>
+            {filteredVideos.length === 0 && (
+              <p>No videos found with this hashtag.</p>
+            )}
+          </div>
+        )}
+
+        {/* Video Container */}
+        <div className="video-container">
+          {filteredVideos.map((video, index) => (
+            <VideoCard
+              key={index}
+              username={video.username}
+              description={video.description}
+              song={video.song}
+              likes={video.likes}
+              saves={video.saves}
+              comments={video.comments}
+              shares={video.shares}
+              url={video.url}
+              profilePic={video.profilePic}
+              setVideoRef={handleVideoRef(index)}
+              autoplay={index === 0}
+            />
+          ))}
+        </div>
+
         <BottomNavbar className="bottom-navbar" />
       </div>
     </div>
   );
-  
 }
 
 export default App;

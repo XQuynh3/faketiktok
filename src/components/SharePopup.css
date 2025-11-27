@@ -1,0 +1,105 @@
+.share-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.share-popup {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.share-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.share-popup-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.share-option:hover {
+  background: #f5f5f5;
+}
+
+.share-option:last-child {
+  border-bottom: none;
+}
+
+.share-option svg {
+  font-size: 24px;
+}
+
+.share-option span:not(.threads-icon):not(.copy-icon) {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.share-option.facebook {
+  color: #1877f2;
+}
+
+.share-option.instagram {
+  color: #e1306c;
+}
+
+.share-option.threads {
+  color: #000;
+}
+
+.share-option.copy {
+  color: #666;
+}
+
+.threads-icon,
+.copy-icon {
+  font-size: 20px;
+}

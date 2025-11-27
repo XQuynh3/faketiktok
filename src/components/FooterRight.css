@@ -3,6 +3,86 @@
   color: #fff;
   margin-right: 5px;
   margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.action-button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-pic-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.profile-pic {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.profile-pic:hover {
+  transform: scale(1.1);
+}
+
+.follow-button {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ff0050;
+  color: white;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.follow-button:hover {
+  transform: scale(1.1);
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s;
+  font-size: 24px;
+}
+
+.action-button:hover {
+  transform: scale(1.2);
+}
+
+.action-button span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.action-button.liked {
+  color: #ff0050;
+}
+
+.action-button.saved {
+  color: #ffd200;
 }
 
 .sidebar-icon {
@@ -41,6 +121,7 @@
   font-weight: 500;
   margin-top: 5px;
 }
+
 .record {
   animation: spinTheRecord infinite 5s linear;
   filter: invert(1);
@@ -49,7 +130,7 @@
 .record img {
   width: 35px;
   height: 35px;
-  padding: 5px;;
+  padding: 5px;
   border-radius: 50px;
   background-color: #b3afaf;
 }
